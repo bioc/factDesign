@@ -296,13 +296,6 @@ heatmap(exprs(estrogen.Fsub)[mainESgenes=="REJECT" & ESTgenes=="REJECT",],Colv=N
 
 @
 
-Two of the genes showed a significant effect at 10 hours, but not at 48 hours.
-
-<<ESThm2,eval=TRUE,fig=TRUE>>=
-
-heatmap(exprs(estrogen.Fsub)[mainESgenes=="REJECT" & ESTgenes=="FAIL TO REJECT",],Colv=NA,col=cm.colors(256))
-
-@
 
 After genes are selected according to contrast tests of interest, the annotation information available in other Bioconductor packages allows for more in-depth research on specific genes.  
 

@@ -7,7 +7,7 @@ contrastTest <- function(model,lambda,cVec=NA,p=.01){
   XpXinv <- summary(model)$cov.unscaled
   sigmahat <- summary(model)$sigma
 
-  df1 <- dim(lambda)[2]
+  df1 <- dim(lambda)[1]
   df2 <- summary(model)$df[2]
 
   cEst <- lambda %*% betahat
