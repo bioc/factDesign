@@ -34,7 +34,8 @@ For \code{par2lambda}: A lambda matrix constructed for testing linear contrasts 
 
 For \code{contrastTest}:
   \item{test }{Returns "REJECT" or "FAIL TO REJECT" based on the result of the test of hypothesis.}
-  \item{pvalue}{The pvalue from the F test.}
+  \item{Fstat}{The F statistic for the test of contrast.}
+  \item{pvalue}{The corresponding pvalue for the F test.}
   \item{cEst}{The contrast estimate.}
 }
 %\references{ ~put references to the literature/web site here ~ }
