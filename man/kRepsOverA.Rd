@@ -32,7 +32,8 @@ kRepsOverA(k, A = 100, INDEX)
 library(affy)
 library(genefilter)
 data(estrogen)
-f1 <- kRepsOverA(1,100,INDEX=phenoData(estrogen))
+#select the replicates with values larger than 5
+f1 <- kRepsOverA(1,5,INDEX=phenoData(estrogen))
 genefilter(estrogen[1:30],f1)
 
 }

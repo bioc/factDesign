@@ -7,7 +7,7 @@ madOutPair <- function(x,whichPair,c=4){
   test1 <- (x[whichPair[1]] > ub) |  (x[whichPair[1]] < lb)
   test2 <- (x[whichPair[2]] > ub) |  (x[whichPair[2]] < lb)
 
-  singleOut <- "NA"	  
+  singleOut <- NA	  
   if(xor(test1,test2)){
     singleOut <- whichPair[which.max(c(test1,test2))]
   }
