@@ -12,17 +12,16 @@
 
 }
 \details{
-The factors in this experiment were estrogen (ES: P or A) and length of exposure (TIME: 10 or 48 hours).   Gene expression values were estimated using the PM-only method in dChip after normalization using the Invariant Set Method (Li and Wong, 2001).
+The factors in this experiment were estrogen (ES: P or A) and length of exposure (TIME: 10 or 48 hours).   Gene expression values were estimated using rma after quantile normalization (see the 'affy' package).  Expression estimates are reported log base 2, as suggested by the rma method.
 }
 \source{
   Scholtens et al.  Analyzing Factorial Designed Microarray Experiments.  Journal of Multivariate Analysis.  To appear. 
 }
-\references{
-  Li and Wong (2001).  Model-based analysis of oligonucleotide arrays: Expression index computation and outlier detection.  PNAS. 98:31-36.
-}
+
+
 \examples{
 data(estrogen)
 pData(estrogen)
-plot(exprs(estrogen)[1,])
+exprs(estrogen)[1,]
 }
 \keyword{datasets}

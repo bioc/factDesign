@@ -20,5 +20,5 @@ contrastTest <- function(model,lambda,cVec=NA,p=.01){
   if(pvalue<p) test <- "REJECT"
   else test <-"FAIL TO REJECT"
 
-  return(list(test,pvalue,cEst))
+  return(list(test=test,pvalue=pvalue,cEst=cEst))
 }
