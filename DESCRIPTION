@@ -6,5 +6,4 @@ Description: This package provides a set of tools for analyzing data from factor
 Maintainer: Denise Scholtens <dscholte@hsph.harvard.edu>
 Depends: Biobase, affy, stats
 License: LGPL
-ReleaseLevel: devel
 
