@@ -44,7 +44,7 @@ For \code{contrastTest}:
 
 % ~Make other sections like Warning with \section{Warning }{....} ~
 
-\seealso{\code{\link{par2lambda}},\code{\link{lm}}  }
+\seealso{\code{\link{lm}}  }
 \examples{
 
 data(estrogen)

@@ -181,7 +181,7 @@ y_{time,ij} = \mu_{i} + \beta_{TIMEi}x_{TIMEj} + \epsilon_i
 
 
 <<lm>>=
-lm.full <- function(y) lm(y ~ ES + TIME + ES*TIME)
+lm.full <- function(y) lm(y ~ ES + TIME + ES:TIME)
 lm.time <- function(y) lm(y ~ TIME)
 
 lm.f <- esApply(estrogen, 1, lm.full)
@@ -196,7 +196,7 @@ lm.t[[1]]
 
 We are only interested in genes which are affected by estrogen.  One way to select such genes is to compare the full linear model (\texttt{lm.f}) to the linear model consisting of only a term for time (\texttt{lm.t}) using an ANOVA $F$-test.  If the full model \texttt{lm.f} fits better than the reduced model \texttt{lm.t}, then we know the gene must be affected by estrogen.
 
-Since we have so many genes to consider, multiple comparisons is an obvious problem.  The R package \Rpackage{multtest} contains many functions that are suitable for multiple comparisons adjustment for microarrays.
+Since we have so many genes to consider, multiple comparisons is an obvious problem.  The R package \Rpackage{multtest} contains many functions that are suitable for multiple comparisons adjustment for microarrays.  Here, the $p$-values from the ANOVA $F$-tests are adjusted according to the Benjamini and Hochberg (1995) False Discovery Rate method with an FDR of .15.  
 
 
 <<comparemodels>>=
@@ -207,7 +207,12 @@ for(i in 1:length(lm.f)){
 }
 
 
-Fsub <- which(Fpvals<.01)
+library(multtest)
+procs <- c("BH")
+F.res <- mt.rawp2adjp(Fpvals,procs)
+F.adjps <- F.res$adjp[order(F.res$index),]
+
+Fsub <- which(F.adjps[,"BH"]<.15)
 
 estrogen.Fsub <- estrogen[Fsub]
 lm.f.Fsub <- lm.f[Fsub]
@@ -225,7 +230,7 @@ Suppose we want to identify genes that are affected by estrogen at 10 hours.  In
 betaNames <- names(lm.f[[1]][["coefficients"]])
 lambda <- par2lambda(betaNames,c("ESP"),c(1))
 
-mainES <- function(x) contrastTest(x,lambda,p=0.10)[[1]]
+mainES <- function(x) contrastTest(x,lambda,p=0.05)[[1]]
 mainESgenes <- sapply(lm.f.Fsub,FUN=mainES)
 sum(mainESgenes=="REJECT")
 
