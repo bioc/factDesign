@@ -3,7 +3,7 @@
 % likely to be overwritten.
 %
 % \VignetteIndexEntry{factDesign Vignette}
-%\VignetteDepends{Biobase,annotate,affy,factDesign}
+%\VignetteDepends{Biobase,annotate,affy,mva,factDesign}
 %\VignetteKeywords{Microarray, Experimental Design}
 %\VignettePackage{factDesign}
 \documentclass[11pt]{article}
@@ -50,6 +50,7 @@ In this vignette, we will demonstrate how to use linear models and the package \
  library(Biobase)
  library(annotate)
  library(affy)
+ library(mva)
  library(factDesign)
 
 @
