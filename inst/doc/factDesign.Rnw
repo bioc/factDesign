@@ -262,7 +262,7 @@ Selecting genes according to $p$-value can produce some possibly misleading resu
 
 \setkeys{Gin}{width=0.5\textwidth}
 
-<<smalleffect,eval=TRUE,fig=TRUE>>=
+<<smalleffect,eval=TRUE>>=
 
 lambdaNum <- par2lambda(betaNames,list(c("(Intercept)","ESP")),list(c(1,1)))
 lambdaDenom <-  par2lambda(betaNames,list(c("(Intercept)")),list(c(1)))
@@ -297,7 +297,7 @@ sum(ESTgenes=="REJECT")
 
 @
 
-\noindnet Again, we can use a heatmap to look at genes for which we rejected $H_{ES,TIME*}.$  
+\noindent Again, we can use a heatmap to look at genes for which we rejected $H_{ES,TIME*}.$  
 
 \setkeys{Gin}{width=0.8\textwidth}
 
