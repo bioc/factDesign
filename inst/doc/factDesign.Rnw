@@ -1,0 +1,315 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+% \VignetteIndexEntry{factDesign Vignette}
+%\VignetteDepends{Biobase,annotate,affy,factDesign}
+%\VignetteKeywords{Microarray, Experimental Design}
+%\VignettePackage{factDesign}
+\documentclass[11pt]{article}
+
+
+\usepackage{amsmath,pstricks}
+\usepackage[authoryear,round]{natbib}
+\usepackage{hyperref}
+\usepackage{times}
+\usepackage{comment}
+
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+
+
+\bibliographystyle{plainnat}
+
+\title{Estrogen 2$\times$2 Factorial Design}
+\author{Denise Scholtens, Robert Gentleman}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section*{Experimental Data}
+
+In this vignette, we will demonstrate how to use linear models and the package \Rpackage{factDesign} to analyze data from a factorial designed microarray experiment.  In this package, an \Robject{exprSet} called \Robject{estrogen} contains gene expression levels for 500 genes from Affymetrix HGU95av2 chips for eight samples from a breast cancer cell line.  The expression estimates were calculated using the PM-only model in dChip after normalization by the Invariant Set Method (Li and Wong, 2001).
+
+
+<<loadlibs>>=
+
+ library(Biobase)
+ library(annotate)
+ library(affy)
+ library(factDesign)
+
+@
+
+The investigators in this experiment were interested in the effect of estrogen on the genes in ER+ breast cancer cells over time.  After serum starvation of all eight samples, they exposed four samples to estrogen, and then measured mRNA transcript abundance after 10 hours for two samples and 48 hours for the other two.  They left the remaining four samples untreated, and measured mRNA transcript abundance at 10 hours for two samples, and 48 hours for the other two.  Since there are two factors in this experiment (\textit{estrogen} and \textit{time}), each at two levels (\textit{present} or \textit{absent},\textit{10 hours} or \textit{48 hours}), this experiment is said to have a 2$\times$2 factorial design.  Table \ref{exptable} shows the correspondence of the sample names in \Robject{estrogen} with the experimental conditions.
+
+\begin{table}[h!]
+\caption{Experimental Conditions for \texttt{.cel} Files}
+\begin{center}
+\begin{tabular}{l|c|c|}
+\multicolumn{1}{l}{time} & \multicolumn{2}{c}{estrogen} \\
+\multicolumn{1}{l}{} & \multicolumn{1}{c}{absent} & \multicolumn{1}{c}{present} \\
+\cline{2-3}
+ 10 hours & \texttt{et1} & \texttt{Et1} \\
+ & \texttt{et2} & \texttt{Et2} \\
+\cline{2-3}
+ 48 hours &  \texttt{eT1} & \texttt{ET1} \\
+ &  \texttt{eT2} & \texttt{ET2} \\
+\cline{2-3}
+\end{tabular}
+\end{center}
+\label{exptable}
+\end{table}
+
+
+<<phenoData>>=
+data(estrogen)
+estrogen
+pData(estrogen)
+
+@
+
+\section*{Analysis Using Fold Change Criteria}
+
+A simple method for finding estrogen-affected genes would be to form a ratio of the mean expression levels of the estrogen-treated samples to the mean of the expression levels for the untreated samples.  Suppose we consider only the 10-hour time point, calculate fold change (FC) values for the estrogen-treated vs. untreated samples, and select genes for which we observe FC>2.  In the plots below, absence/presence of estrogen is represented by \texttt{e/E} and on the horizontal axis.  The proposed FC criteria would compare the mean of the green dots to the mean of the red dots.
+
+If we used a FC$>2$ criteria to identify ES-affected genes in the \Robject{estrogen} data set, we would successfully eliminate genes like gene 4 and select genes like gene 58; however, we might include many false positive results.  Gene 320 has a FC value greater than 2, but the variability of the expression estimates causes some concern.  Note that for gene 81, the FC value is quite low due to the presence of a single outlier.
+
+
+<<FCplots,eval=TRUE,fig=TRUE>>=
+
+par(mfrow=c(2,2))
+par(las=2)
+for (i in c(4,58,320,81)){
+	index <- i
+	expvals <- exprs(estrogen)[index,]
+	plot(expvals,axes=F,cex=1.5,
+		xlab="Conditions",ylab="Expression Estimate")
+	points(1:2,expvals[1:2],pch=16,cex=1.5,col=2)	
+	points(3:4,expvals[3:4],pch=16,cex=1.5,col=3)
+	axis(1,at=1:8,labels=rownames(pData(estrogen)))
+	axis(2)
+	FC <- round(mean(expvals[3:4])/mean(expvals[1:2]),3)
+	title(paste("gene ",index,", FC=",FC,sep=""))
+}
+
+@
+
+We would like to find genes with consistent expression estimates between replicate samples that are either up- or down-regulated by estrogen, for example genes 85 and 97.  We would also like to find genes like gene 13 for which the magnitude of the effect of estrogen changes over time.  Furthermore, we would like to exclude genes like gene 26 that demonstrate change primarily over time, and not necessarily due to estrogen.
+
+Selecting genes according to fold change estimates alone does not take advantage of the measure of variability in gene expression offered by the replicate sampels.  Furthermore, we cannot attach statistical significance (i.e., a $p$-value) to the fold change estimates computed in this manner.  It is also difficult to quantify any change in estrogen effect over time.  Classical statistical linear modeling with thoughtful biological interpretation of the parameters offers a natural paradigm for the analysis of factorial designed microarray experiments.
+
+
+<<moreplots,eval=TRUE,fig=TRUE>>=
+
+par(mfrow=c(2,2))
+par(las=2)
+for (i in c(85,97,13,26)){
+	index <- i
+	expvals <- exprs(estrogen)[index,]
+	plot(expvals,axes=F,cex=1.5,
+		xlab="Conditions",ylab="Expression Estimate")
+	axis(1,at=1:8,labels=rownames(pData(estrogen)))
+	axis(2)
+	FC <- round(mean(expvals[3:4])/mean(expvals[1:2]),3)
+	title(paste("gene ",i,", FC=",FC,sep=""))
+}
+
+@
+
+\section*{Removing Outliers}
+
+Before defining the linear model for this particular experiment, we want to remove observations that might be single outliers in the data set.  The test we used is based on the differences between replicates and is appropriate for small factorial experimental designs.  First, we identify replicate pairs with differences that are significantly larger than expected, and then we can apply a median absolute deviation filter to make sure one of the observations is indeed the single outlier.  For example, gene 294 has a replicate pair with a large difference, but we wouldn't want to label either observation as the single outlier.  Gene 81 has one observation that indeed appears to be a single outlier.
+
+
+<<outliers,eval=TRUE,fig=TRUE>>=
+
+op1 <- outlierPair(exprs(estrogen)[294,],INDEX=pData(estrogen),p=.05)
+print(op1)
+madOutPair(exprs(estrogen)[25,],op1[[3]])
+
+op2 <- outlierPair(exprs(estrogen)[81,],INDEX=pData(estrogen),p=.05)
+print(op2)
+madOutPair(exprs(estrogen)[81,],op2[[3]])
+
+
+
+par(mfrow=c(1,2))
+par(las=2)
+for (i in c(294,81)){
+	index <- i
+	expvals <- exprs(estrogen)[index,]
+	plot(expvals,axes=F,cex=1.5,
+		xlab="Conditions",ylab="Expression Estimate")
+	points(3:4,expvals[3:4],pch=16)
+	axis(1,at=1:8,labels=rownames(pData(estrogen)))
+	axis(2)
+	title(paste("gene ",i))
+}
+
+@
+
+
+\section*{Describing the Linear Model}
+
+The 2$\times$2 factorial design of this experiment allows us to use a statistical linear model to measure the effects of estrogen and time on gene expression.  In equation \eqref{eq:lmfull}, $y_{full,ij}$ is the observed expression level for gene $i$ in sample $j$ ($j=1,...,8$).  $x_{ESj}=1$ if estrogen is present and 0 otherwise; $x_{TIMEj}=1$ if gene expression was measured at 48 hours and 0 otherwise.  $\mu_i$ is the expression level of untreated gene $i$ at 10 hours.  $\beta_{ESi}$ and $\beta_{TIMEi}$ represent the effects of estrogen and time on the expression level of gene $i$, respectively.  $\beta_{ES:TIMEi}$ is called an interaction term for gene $i$; this allows us to quantify any change in estrogen effect over time for probes like \verb+1700_at+.  $\epsilon_{ij}$ represents random error for gene $i$ and sample $j$, and is assumed to be independent for each gene and sample, and normally distributed with mean 0 and variance $\sigma_i^2$.  The biologically independent replicates of the experimental conditions in this study allow us to estimate $\sigma_i^2$.
+
+\begin{equation}
+y_{full,ij} = \mu_{i} + \beta_{ESi}x_{ESj} + \beta_{TIMEi}x_{TIMEj} + \beta_{ES:TIMEi}x_{ESj}x_{TIMEj} + \epsilon_{ij}
+\label{eq:lmfull}
+\end{equation}
+
+\noindent To proceed with the analysis, we estimate the $\beta$ parameters for every gene using least squares, and call the estimates $\hat{\beta}_{ESi}$, $\hat{\beta}_{TIMEi}$, and $\hat{\beta}_{ES:TIMEi}$.  For gene $i$, the samples that were not treated with estrogen and were measured at 10 hours will have estimated expression values of $\hat{\mu}_i$. The estrogen-treated, 10-hour samples will have estimates $\hat{\mu}_i+\hat{\beta}_{ESi}$.  The untreated, 48-hour samples will have estimates $\hat{\mu}_i+\hat{\beta}_{TIMEi}$.  The estrogen-treated, 48-hour samples will have estimates $\hat{\mu}_i+\hat{\beta}_{ESi}+\hat{\beta}_{TIMEi}+\hat{\beta}_{ES:TIMEi}$.
+
+We will also form a reduced model with only an effect for time \eqref{eq:lmtime}, and use this to decide if a model including estrogen is appropriate for the gene of interest.
+
+\begin{equation}
+y_{time,ij} = \mu_{i} + \beta_{TIMEi}x_{TIMEj} + \epsilon_i
+\label{eq:lmtime}
+\end{equation}
+
+
+<<lm>>=
+lm.full <- function(y) lm(y ~ ES + TIME + ES*TIME)
+lm.time <- function(y) lm(y ~ TIME)
+
+lm.f <- esApply(estrogen, 1, lm.full)
+lm.t <- esApply(estrogen, 1, lm.time)
+
+summary(lm.f[[1]])
+summary(lm.t[[1]])
+
+@   
+
+\section*{Selecting Genes of Interest using the Linear Model}
+
+We are only interested in genes which are affected by estrogen.  One way to select such genes is to compare the full linear model (\texttt{lm.f}) to the linear model consisting of only a term for time (\texttt{lm.t}) using an ANOVA $F$-test.  If the full model \texttt{lm.f} fits better than the reduced model \texttt{lm.t}, then we know the gene must be affected by estrogen.
+
+<<comparemodels>>=
+
+Fpvals <- rep(0,length(lm.f))
+for(i in 1:length(lm.f)){
+  Fpvals[i]<-anova(lm.t[[i]],lm.f[[i]])$P[2]
+}
+
+
+
+@
+
+Since we have so many genes to consider, multiple comparisons is an obvious problem.  We can adjust the $p$-values resulting from the ANOVA $F$-test using a the False Discovery Method for dependent hypothesis tests of Benjamini and Yekutieli (2001).  If we select genes that have a $p$-value $< 0.10$ after the adjustment, then we know the genes are significantly affected by estrogen with a false positive rate of 0.10.
+
+<<mcadjust>>=
+
+library(multtest)
+
+F.res <- mt.rawp2adjp(Fpvals,"BY")
+F.adjps <- F.res$adjp[order(F.res$index),]
+	
+numgenes.Fsub <- sum(F.adjps[,2]<.10)
+Fsub <- which(F.adjps[,2]<.10)
+
+estrogen.Fsub <- estrogen[Fsub]
+lm.f.Fsub <- lm.f[Fsub]
+
+estrogen.Fsub
+
+@
+
+Suppose we want to identify genes that are affected by estrogen at 10 hours.  In our linear model, this corresponds to testing a null hypothesis $H_{0ES}:\beta_{ES}=0$, and if the hypothesis rejected, concluding that the gene has a main estrogen effect.  
+
+<<mainES>>=
+
+betaNames <- names(lm.f[[1]][["coefficients"]])
+lambda <- par2lambda(betaNames,c("ESP"),c(1))
+
+mainES <- function(x) contrastTest(x,lambda)[[1]]
+mainESgenes <- sapply(lm.f.Fsub,FUN=mainES)
+sum(mainESgenes=="REJECT")
+
+@
+
+Heatmaps can be a useful way to visualize genes that are selected according to a certain criteria.  In the first heatmap that follows, we see genes for which the null hypothesis $H_{0ES}$ was rejected at a 0.01 significance level.  In the second heatmap, we see the genes for which the main estrogen effect was not statistically significant;  it appears that estrogen affected these genes only after 48 hours.
+
+<<EShm1,eval=TRUE,fig=TRUE>>=
+
+heatmap(exprs(estrogen.Fsub)[mainESgenes=="REJECT",],Colv=1:8)
+
+@
+
+\setkeys{Gin}{width=0.5\textwidth}
+
+<<EShm2,eval=TRUE,fig=TRUE>>=
+
+heatmap(exprs(estrogen.Fsub)[mainESgenes=="FAIL TO REJECT",],Colv=1:8)
+
+@
+
+Selecting genes according to $p$-value can produce some possibly misleading results.  For example, the 17th gene with a main ES effect had a $p$-value for $\beta_{ES}$ less than 0.01, but the estimate of fold change at 10 hours is only 1.42.  While this small effect is statistically significant, it may not be biologically interesting.  
+
+\setkeys{Gin}{width=0.5\textwidth}
+
+<<smalleffect,eval=TRUE,fig=TRUE>>=
+
+lambdaNum <- par2lambda(betaNames,list(c("(Intercept)","ESP")),list(c(1,1)))
+lambdaDenom <-  par2lambda(betaNames,list(c("(Intercept)")),list(c(1)))
+FCval <- findFC(lm.f.Fsub[[17]],lambdaNum,lambdaDenom)
+print(FCval)
+
+@
+
+Now suppose we want to find genes that are affected by estrogen after 48 hours.  We want to compare the gene expression levels of the untreated samples that were measured at 48 hours with the estrogen-treated samples at 48 hours.  In terms of our linear model, for each gene, we want to test the null hypothesis $H_{0ES,TIME}$ in \eqref{eq:EStime}.
+
+\begin{equation}
+H_{0ES,TIME}: \mu + \beta_{TIME} = \mu + \beta_{ES} + \beta_{TIME} + \beta_{ES:TIME}  
+\label{eq:EStime}
+\end{equation}
+
+\noindent Testing the null hypothesis $H_{0ES,TIME}$ is equivalent to testing the linear contrast $H_{0ES,TIME*}$ in \eqref{eq:contrast}.
+
+\begin{equation}
+H_{0ES,TIME*}: \beta_{ES} + \beta_{ES:TIME} = 0 
+\label{eq:contrast}
+\end{equation}
+
+\noindent The technique for testing this linear contrast follows from straightforward linear model theory.
+
+<<performct>>=
+
+lambdaEST <- par2lambda(betaNames,list(c("ESP","ESP:TIME48h")),list(c(1,1)))
+
+ESTcontrast <- function(x) contrastTest(x,lambdaEST)[[1]]
+ESTgenes <- sapply(lm.f.Fsub,FUN=ESTcontrast)
+sum(ESTgenes=="REJECT")
+
+@
+
+\noindnet Again, we can use a heatmap to look at genes for which we rejected $H_{ES,TIME*}.$  
+
+\setkeys{Gin}{width=0.8\textwidth}
+
+<<ESThm,eval=TRUE,fig=TRUE>>=
+
+heatmap(exprs(estrogen.Fsub)[ESTgenes=="REJECT",],Colv=1:8)
+
+@
+
+After genes are selected according to contrast tests of interest, the annotation information available in other Bioconductor packages allows for more in-depth research on specific genes.  
+
+
+Using linear models for factorial designed microarray experiments enables investigators to extend analyses beyond basic gene filtering according to fold change. Genes can be selected in a high-throughput manner with biologically interpretable parameters and quantifiable measures of confidence.  This lab investigated the effects of estrogen on breast cancer cells, but the principles behind this specific example are applicable to any carefully designed microarray study.
+
+
+\end{document}
