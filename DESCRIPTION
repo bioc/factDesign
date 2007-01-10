@@ -10,6 +10,5 @@ Description: This package provides a set of tools for analyzing data
 Maintainer: Denise Scholtens <dscholtens@northwestern.edu>
 Depends: Biobase, affy, stats
 License: LGPL
-Packaged: Wed May 5 20:13:45 2004; scholten
 biocViews: Statistics, Microarray, DifferentialExpression
 
