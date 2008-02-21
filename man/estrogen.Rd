@@ -8,7 +8,7 @@
 \usage{data(estrogen)}
 \format{
   
- An exprSet with 500 genes, 8 samples, and 2 variables.
+ An ExpressionSet object with 500 genes, 8 samples, and 2 variables.
 
 }
 \details{
