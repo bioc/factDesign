@@ -236,7 +236,7 @@ Suppose we want to identify genes that are affected by estrogen at 10 hours.  In
 
 <<mainES>>=
 
-betaNames <- names(lm.f[[1]][["coefficients"]])
+betaNames <- names(coef(lm.f[[1]]))
 lambda <- par2lambda(betaNames,c("ESP"),c(1))
 
 mainES <- function(x) contrastTest(x,lambda,p=0.05)[[1]]

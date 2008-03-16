@@ -1,9 +1,7 @@
-
 contrastTest <- function(model,lambda,cVec=NA,p=.01){
-  
   if(is.na(cVec)) cVec <- rep(0,dim(lambda)[1])
 
-  betahat <- model$coef
+  betahat <- coef(model)
   XpXinv <- summary(model)$cov.unscaled
   sigmahat <- summary(model)$sigma
 
