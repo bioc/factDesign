@@ -15,8 +15,10 @@
 The factors in this experiment were estrogen (ES: P or A) and length of exposure (TIME: 10 or 48 hours).   Gene expression values were estimated using rma after quantile normalization (see the 'affy' package).  Expression estimates are reported log base 2, as suggested by the rma method.
 }
 \source{
-  Scholtens et al.  Analyzing Factorial Designed Microarray Experiments.  Journal of Multivariate Analysis.  To appear. 
+  Scholtens et al.  Analyzing Factorial Designed Microarray Experiments.  Journal of 
+Multivariate Analysis.  2004;90(1):19-43. 
 }
+
 
 
 \examples{

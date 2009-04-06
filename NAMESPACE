@@ -1,0 +1,4 @@
+importFrom(genefilter,kOverA)
+importFrom(stats,mad)
+
+export(contrastTest,findFC,kRepsOverA,madOutPair,outlierPair,par2lambda)

@@ -44,7 +44,8 @@ For \code{madOutPair}:
 
 
 }
-\references{Scholtens et al.  Analyzing Factorial Designed Microarray Experiments.  Journal of Multivariate Analysis.  To appear. }
+\references{Scholtens et al.  Analyzing Factorial Designed Microarray Experiments.  
+Journal of Multivariate Analysis.  2004;90(1):19-43. }
 \author{Denise Scholtens}
 %\note{ }
 
