@@ -1,4 +1,3 @@
-importFrom(genefilter,kOverA)
-importFrom(stats,mad)
+importFrom(stats, coef, mad, median, pf)
 
 export(contrastTest,findFC,kRepsOverA,madOutPair,outlierPair,par2lambda)

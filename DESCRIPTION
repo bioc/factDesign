@@ -7,9 +7,9 @@ Description: This package provides a set of tools for analyzing data
         microarray experiment for which a linear model is appropriate.
         The functions can be used to evaluate tests of contrast of
         biological interest and perform single outlier detection.
-Imports: genefilter, stats
-Suggests: affy
-Maintainer: Denise Scholtens <dscholtens@northwestern.edu>
 Depends: Biobase (>= 2.5.5)
+Imports: stats
+Suggests: affy, genefilter
+Maintainer: Denise Scholtens <dscholtens@northwestern.edu>
 License: LGPL
 biocViews: Bioinformatics, Microarray, DifferentialExpression
