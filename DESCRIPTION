@@ -1,6 +1,6 @@
 Package: factDesign
 Title: Factorial designed microarray experiment analysis
-Version: 1.35.0
+Version: 1.35.1
 Author: Denise Scholtens
 Description: This package provides a set of tools for analyzing data
         from a factorial designed microarray experiment, or any
@@ -9,7 +9,7 @@ Description: This package provides a set of tools for analyzing data
         biological interest and perform single outlier detection.
 Depends: Biobase (>= 2.5.5)
 Imports: stats
-Suggests: affy, genefilter
+Suggests: affy, genefilter, multtest
 Maintainer: Denise Scholtens <dscholtens@northwestern.edu>
 License: LGPL
 biocViews: Bioinformatics, Microarray, DifferentialExpression
